@@ -1,4 +1,4 @@
-# Futsal Match Summary OCR
+# Futsal Summary Extractor (FUSE)
 
 This project is a Python script that performs Optical Character Recognition (OCR) on futsal match summaries to extract technical information from the matches and generate a CSV file containing these details for research purposes.
 
