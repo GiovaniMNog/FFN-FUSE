@@ -15,7 +15,28 @@ def ocr_image(image, reader):
     # Converte a imagem PIL para formato necessário pelo easyocr
     img_path = "temp_image.jpg"
     image.save(img_path)
-    results = reader.readtext(img_path, detail=1)
+    results = reader.readtext(
+        img_path,                    # Caminho da imagem
+        decoder='beamsearch',        # Use 'beamsearch' for better accuracy
+        beamWidth=10,                # Higher beamWidth for more precision
+        batch_size=1,                # Batch size for processing
+        detail=1,                    # Output with bounding boxes and confidence
+        paragraph=False,             # Do not combine results into paragraphs
+        min_size=10,                 # Minimum size for text boxes
+        rotation_info=[0, 90, 180, 270],  # Check for all rotations
+        contrast_ths=0.1,            # Contrast threshold
+        adjust_contrast=0.5,         # Adjust contrast for low contrast images
+        text_threshold=0.7,          # Text confidence threshold
+        low_text=0.4,                # Lower text confidence threshold
+        link_threshold=0.4,          # Link confidence threshold
+        canvas_size=2560,            # Maximum size of the image canvas
+        mag_ratio=1.0,               # Magnification ratio
+        slope_ths=0.1,               # Maximum slope for merging boxes
+        ycenter_ths=0.5,             # Maximum y-center deviation
+        height_ths=0.5,              # Maximum height difference
+        width_ths=0.5,               # Maximum width distance
+        add_margin=0.1               # Add margin to bounding boxes
+    )
     # Organiza os resultados em listas separadas
     bboxes = [result[0] for result in results]
     texts = [result[1] for result in results]
@@ -69,4 +90,12 @@ if not os.path.exists(output_directory):
     os.makedirs(output_directory)
 
 # Processa os PDFs no diretório de entrada e salva os CSVs no diretório de saída
-process_pdfs_in_directory(input_directory, output_directory)
+def __main__():
+    process_pdfs_in_directory(input_directory, output_directory)
+
+if __name__ == "__main__":
+    __main__()
+
+# Fim do arquivo FUSE.py
+
+
