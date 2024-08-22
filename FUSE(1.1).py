@@ -1,4 +1,5 @@
 #FUSE: Futsal Summary Extractor
+
 import os
 from pdf2image import convert_from_path
 from PIL import Image
@@ -16,26 +17,8 @@ def ocr_image(image, reader):
     img_path = "temp_image.jpg"
     image.save(img_path)
     results = reader.readtext(
-        img_path,                    # Caminho da imagem
-        #decoder='beamsearch',        # Use 'beamsearch' for better accuracy
-        #beamWidth=10,                # Higher beamWidth for more precision
-        #batch_size=1,                # Batch size for processing
-        detail=1,                    # Output with bounding boxes and confidence
-        #paragraph=False,             # Do not combine results into paragraphs
-        #min_size=10,                 # Minimum size for text boxes
-        #rotation_info=[0, 90, 180, 270],  # Check for all rotations
-        #contrast_ths=0.1,            # Contrast threshold
-        #adjust_contrast=0.5,         # Adjust contrast for low contrast images
-        #text_threshold=0.7,          # Text confidence threshold
-        #low_text=0.4,                # Lower text confidence threshold
-        #link_threshold=0.4,          # Link confidence threshold
-        #canvas_size=2560,            # Maximum size of the image canvas
-        #mag_ratio=1.0,               # Magnification ratio
-        #slope_ths=0.1,               # Maximum slope for merging boxes
-        #ycenter_ths=0.5,             # Maximum y-center deviation
-        #height_ths=0.5,              # Maximum height difference
-        #width_ths=0.5,               # Maximum width distance
-        #add_margin=0.1               # Add margin to bounding boxes
+        img_path,                    
+        detail=1                   
     )
     # Organiza os resultados em listas separadas
     bboxes = [result[0] for result in results]
@@ -43,10 +26,23 @@ def ocr_image(image, reader):
     probs = [result[2] for result in results]
     return bboxes, texts, probs
 
-def save_text_to_csv(bboxes, texts, probs, csv_path):
-    """Saves the extracted text to a CSV file."""
-    data = {'bbox': bboxes, 'text': texts, 'prob': probs}
+def process_ocr_results(bboxes, texts, probs):
+    """
+    Process OCR results into a structured DataFrame with specific columns.
+    """
+    data = {
+        'coordenada 1 da bbox': [bbox[0] for bbox in bboxes],
+        'coordenada 2': [bbox[1] for bbox in bboxes],
+        'coordenada 3': [bbox[2] for bbox in bboxes],
+        'coordenada 4': [bbox[3] for bbox in bboxes],
+        'text': texts,
+        'prob': probs
+    }
     df = pd.DataFrame(data)
+    return df
+
+def save_text_to_csv(df, csv_path):
+    """Saves the organized DataFrame to a CSV file."""
     df.to_csv(csv_path, index=False)
 
 def concatenate_and_remove_csvs(base_filename, output_directory):
@@ -74,8 +70,9 @@ def process_pdfs_in_directory(input_directory, output_directory):
             base_filename = os.path.splitext(filename)[0]
             for i, image in enumerate(images):
                 bboxes, texts, probs = ocr_image(image, reader)
+                df = process_ocr_results(bboxes, texts, probs)
                 csv_path = os.path.join(output_directory, f"{base_filename}_page_{i+1}.csv")
-                save_text_to_csv(bboxes, texts, probs, csv_path)
+                save_text_to_csv(df, csv_path)
                 print(f"Saved OCR text to {csv_path}")
 
             # Concatena os CSVs das páginas em um único CSV e remove os CSVs intermediários
@@ -97,5 +94,4 @@ if __name__ == "__main__":
     __main__()
 
 # Fim do arquivo FUSE.py
-
 
