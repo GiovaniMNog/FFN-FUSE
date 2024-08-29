@@ -94,4 +94,3 @@ if __name__ == "__main__":
     __main__()
 
 # Fim do arquivo FUSE.py
-
